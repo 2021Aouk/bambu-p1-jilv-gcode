@@ -1,11 +1,11 @@
 # bambu-p1-jilv-gcode
 
 
-<h1 style="font-size: 40px;">急律gcode</h1>
+<h1 style   风格="font-size: 40px;">急律gcode</h1>
 
 
 
-# 项目介绍：
+## 项目介绍：
 
 拓竹p1的急律gcode，不磨嘴、无清理线、精简步骤、快速开打、0维护
 
