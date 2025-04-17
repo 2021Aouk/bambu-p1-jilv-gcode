@@ -27,7 +27,7 @@ G1 X250 Y0 F30000
 
 G28 Z P0 T300; home z with low precision,permit 300 temperature
 M104 S{nozzle_temperature_initial_layer[initial_extruder]+0} ; z归零后立马回温
-G1 X246 Y0 Z-0.3
+G1 X246 Y0 Z-0.4
 G91
 ;因为没上料所以此处挤出没有用，如果打废或者手动进料会挤出，记得清理
 G1 X10 Y0 Z0  F18000  ;E5
@@ -115,7 +115,6 @@ G29.2 S1 ;打开ABL（自动调平），S0是关闭
 ;M106 P3 S0 ; turn off chamber fan
 
 ;M190 S[bed_temperature_initial_layer_single] ;wait for bed temp
-
 
 
 
