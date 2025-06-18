@@ -11,7 +11,7 @@ M220 S100 ;速度100%
 M221 S100 ;流量100%
 
 M140 S[bed_temperature_initial_layer_single] ;设置热床温度，不等待
-M104 S{nozzle_temperature_initial_layer[initial_extruder]+0} ; 喷嘴比设定高0度，调平
+M109 S{nozzle_temperature_initial_layer[initial_extruder]-10} ;喷嘴比设定-10度防漏
 M17 X1.2 Y1.2 Z0.75 ;将电机电流复位为默认值
 M17 Z0.4 ; 启用电机(降低Z马达电流)
 
@@ -117,6 +117,7 @@ G29.2 S1 ;打开ABL（自动调平），S0是关闭
 ;M106 P3 S0 ; turn off chamber fan
 
 ;M190 S[bed_temperature_initial_layer_single] ;wait for bed temp
+
 
 
 
