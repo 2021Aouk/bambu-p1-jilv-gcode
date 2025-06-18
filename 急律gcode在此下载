@@ -28,6 +28,9 @@ G1 X128 Y128 F30000
 
 G28 Z P0 T300; home z with low precision,permit 300 temperature
 M104 S{nozzle_temperature_initial_layer[initial_extruder]+0} ; z归零后立马回温
+G91
+G1 X+5
+G90
 G1 Z-0.4
 G91
 ;因为没上料所以此处挤出没有用，如果打废或者手动进料会挤出，记得清理
