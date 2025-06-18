@@ -24,7 +24,7 @@ M204 S10000 ; init ACC set to 10m/s^2
 ;将m290设在g28后也会导致后续所有任务傻b竹子死活归零无力
 
 G28 X Y 
-G1 128 Y128 F30000
+G1 X128 Y128 F30000
 
 G28 Z P0 T300; home z with low precision,permit 300 temperature
 M104 S{nozzle_temperature_initial_layer[initial_extruder]+0} ; z归零后立马回温
