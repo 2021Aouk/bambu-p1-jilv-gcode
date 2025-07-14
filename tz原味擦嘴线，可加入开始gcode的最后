@@ -1,0 +1,16 @@
+;===== noozle load line ======tz原味擦嘴线，可加入开始gcode的最后====================
+M975 S1
+G90
+M83
+T1000
+G1 X18.0 Y1.0 Z0.8 F18000;Move to start position
+M109 S{nozzle_temperature_initial_layer[initial_extruder]}
+G1 Z0.2
+G0 E2 F300
+G0 X240 E15 F{outer_wall_volumetric_speed/(0.3*0.5)     * 60}
+G0 Y11 E0.700 F{outer_wall_volumetric_speed/(0.3*0.5)/ 4 * 60}
+G0 X239.5
+G0 E0.2
+G0 Y1.5 E0.700
+G0 X18 E15 F{outer_wall_volumetric_speed/(0.3*0.5)     * 60}
+M400
