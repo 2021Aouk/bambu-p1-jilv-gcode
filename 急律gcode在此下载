@@ -129,11 +129,22 @@ G29.2 S1 ;打开ABL（自动调平），S0是关闭
 
 ;M623
 ;===== bed leveling end ================================
-;=====对于有纹理的PEI板，在归巢时降低喷嘴，因为喷嘴接触到纹理的最顶部 ==
-;curr_bed_type={curr_bed_type}
-;{if curr_bed_type=="Textured PEI Plate"}
-;G29.1 Z{-0.04} ; for Textured PEI Plate
-;{endif}
+
+;=====对于有纹理的PEI板，在归零时降低喷嘴，因为喷嘴接触到纹理的最顶部 ==
+{if curr_bed_type=="Textured PEI Plate"}
+G29.1 Z{-0.04} ; for Textured PEI Plate
+{endif}
+
+;感谢二月喵逆向的打印板定义名称
+;高温光面板：High Temp Plate
+;纹理PEI：Textured PEI Plate
+;低温纹理板：Textured Cool Plate
+;工程板：Engineering Plate
+;光滑低温：Cool Plate
+;定位板？：Supertack Plate
+
+
+
 ;========关掉灯和挤压温度等 ============
 ;M1002 gcode_claim_action : 0
 ;M106 S0 ; turn off fan
