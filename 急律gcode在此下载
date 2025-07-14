@@ -53,7 +53,7 @@ M975 S1 ; 打开振动补偿
 
 ;G1 X80 Y245 F30000 ;移动到马桶前面
 ;G1 Y266 F3000 ;慢慢移到马桶里，y267就可能撞丢步，虽然再往里废料更容易进去
-;不注释掉以上2个代码会导致二次回坑前后动，注释掉同时启用下文m109会停在此坐标上达到温度再按拓竹ams代码自己回坑
+;不注释掉以上2个代码会导致二次回坑前后动，注释掉会会停在热床上达到温度再按拓竹ams代码自己回坑
 
 ;以下三个g代码停顿了好一会儿，可优化吗？25628：是m620的后摇
 M1002 gcode_claim_action : 2
@@ -85,7 +85,7 @@ G1 E5 Z0.2 F3000 ;换料不干净别增加这个，
 M106 P1 S255 ;此行无效原因见下
 G92 E0
 M106 P1 S255 ;此行无效原因见下
-G1 E80 F{filament_max_volumetric_speed[initial_extruder]/2.4053*60+190} ;换料不干净增加这个E
+G1 E80 F{filament_max_volumetric_speed[initial_extruder]/2.4053*60+150} ;换料不干净增加这个E
 ;换料不干净增加这个EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
 ;换料不干净增加这个EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
 ;换料不干净增加这个E
@@ -101,9 +101,12 @@ G1 E30 F{filament_max_volumetric_speed[initial_extruder]/2.4053*60+190} ;换料�
 G92 E0
 G1 E3 F{filament_max_volumetric_speed[initial_extruder]/2.4053*60+240} ；
 G92 E0
+G92 E0
+G1 E-0.1 F300 ；
+G92 E0
 G1 X145 F25000 ;丢步的话是y太靠后
 
-G1 E0.05 F3600;挤出一点防止开打缺料
+G1 E0.01 F3600;挤出一点防止开打缺料
 
 M106 P1 S0 ;关闭吹料风扇（删掉也会关，但不知道会什么刁钻问题）
 
@@ -142,7 +145,6 @@ G29.2 S1 ;打开ABL（自动调平），S0是关闭
 
 
 
-
 ;=====================================结束g代码================================
 ;=====================================结束gcode================================
 M400 ; wait for buffer to clear
@@ -151,10 +153,10 @@ M106 S0 ; turn off fan
 M106 P2 S0 ; turn off remote part cooling fan
 M106 P3 S0 ; turn off chamber cooling fan
 
-M104 S{nozzle_temperature_initial_layer[initial_extruder]+45} 
+M104 S300 
 ;喷嘴比设定高50度，不等待，同时归位和降低热床，此处高于300会不执行
 G92 E0 ; zero the extruder
-G1 E-2 F3000 ;回抽
+G1 E-4 F3000 ;回抽
 G91
 G1 X+5 Y+5 F24000
 G90
@@ -163,7 +165,7 @@ G1 X80 Y254 F30000 ; 回坑，x80处门槛低
 G1 Y266 F3000
 G1 X64 Y266 F12000 ;先左移再加热，避免在挂史上
 G92 E0 ; zero the extruder
-G1 E-19 F3000 ;此处回抽减少下回冲刷
+G1 E-17 F3000 ;此处回抽减少下回冲刷
 
 M400 ; wait all motion done
 M17 S
@@ -177,7 +179,7 @@ M17 Z0.4 ; lower z motor current to reduce impact if there is something in the b
     G1 Z248
 {endif}
 
-M109 S{nozzle_temperature_initial_layer[initial_extruder]+45} ;喷嘴比设定高50度，等待，使余料流净
+M109 S300 ;喷嘴比设定高50度，等待，使余料流净
 
 G4 P20000      ;等待20秒钟喷嘴余料流净滴落
 G1 X84 Y266 F30 ;缓慢移动10s
@@ -210,6 +212,21 @@ G1 X100 Y265 F1500
 G1 X100 Y262
 G1 X65 Y262
 G1 X65 Y263
+
+
+G1 X100 Y266 
+G1 X100 Y263 ;2572加这几段
+G1 X65 Y263
+G1 X65 Y265
+G1 X100 Y265 F1500
+G1 X100 Y262
+G1 X65 Y262
+G1 X65 Y263
+
+
+
+
+
 G1 X100 Y263 F30000
 G1 X100 Y262
 G1 X65 Y262
