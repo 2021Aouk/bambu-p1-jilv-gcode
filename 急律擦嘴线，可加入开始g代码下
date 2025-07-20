@@ -1,11 +1,39 @@
-G1 X203 Y1
+;==========急律擦嘴线，可加入开始gcode的最后=================
+M975 S1
+G90
+M83
+T1000
+G1 X203 Y1G1 Z0.8 F20000;就位
 ;起始结束位置本应该都是200，但起始挪到203可以挪远线头不影响结束线
-G1 X255 E6.5 
+G1 Z0.2
+M109 S{nozzle_temperature_initial_layer[initial_extruder]}
+G1 E2 F300
+G1 X255 E6.5 F{outer_wall_volumetric_speed/(0.3*0.5)/ 4 * 60}
 ;往右划细线，顺便顶掉上回的粗线
 G1 Y6 E0.75
 G1 X256 E0.15
 G1 Y0 E0.9
-G1 X246 E1.8
-G1 X236 E1.5
-G1 X226 E1.2
+G1 X246 E0.8
+G1 X244 E6
+G1 X240 E1
+G1 X230 E1.2
 G1 X200 E2.08
+M400
+
+
+;===== noozle load line ======草稿擦嘴线，可加入开始gcode的最后====================
+M975 S1
+G90
+M83
+T1000
+G1 X256.0 Y110.0 Z0.8 F20000;Move to start position
+M109 S{nozzle_temperature_initial_layer[initial_extruder]}
+G1 Z0.2
+G0 E2 F300
+G0 Y1 E7.5 F{outer_wall_volumetric_speed/(0.3*0.5)     * 60}
+G0 X250 E0.500 F{outer_wall_volumetric_speed/(0.3*0.5)/ 4 * 60}
+G0 Y2 E7.5 F{outer_wall_volumetric_speed/(0.3*0.5)     * 60}
+G0 X255.5 E0.500 F{outer_wall_volumetric_speed/(0.3*0.5)/ 4 * 60}
+G0 E0.2
+G0 Y109 E7 F{outer_wall_volumetric_speed/(0.3*0.5)     * 60}
+M400
