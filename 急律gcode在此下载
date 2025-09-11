@@ -37,7 +37,7 @@ G28 Z P0 T300; home z with low precision,permit 300 temperature
 G91
 G1 X+5
 G90
-G1 Z-0.2
+G1 Z-0.15
 G91
 ;因为没上料所以此处挤出没有用，如果打废或者手动进料会挤出，记得清理
 G1 X-10 Y0 Z0  F18000  ;E5
@@ -85,7 +85,7 @@ G1 E5 Z0.2 F3000 ;换料不干净别增加这个，
 M106 P1 S255 ;此行无效原因见下
 G92 E0
 M106 P1 S255 ;此行无效原因见下
-G1 E80 F{filament_max_volumetric_speed[initial_extruder]/2.4053*60+150} ;换料不干净增加这个E
+G1 E110 F{filament_max_volumetric_speed[initial_extruder]/2.4053*60+150} ;换料不干净增加这个E
 ;换料不干净增加这个EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
 ;换料不干净增加这个EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
 ;换料不干净增加这个E
@@ -152,6 +152,7 @@ G29.1 Z{-0.04} ; for Textured PEI Plate
 ;M106 P3 S0 ; turn off chamber fan
 
 ;M190 S[bed_temperature_initial_layer_single] ;wait for bed temp
+
 
 
 
