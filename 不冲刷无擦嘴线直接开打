@@ -153,28 +153,6 @@ G29.1 Z{-0.04} ; for Textured PEI Plate
 
 ;M190 S[bed_temperature_initial_layer_single] ;wait for bed temp
 
-;==========急律擦嘴线，可加入开始gcode的最后=================
-M975 S1
-G90
-M83
-T1000
-G1 Z5 F25000 ;
-G1 X203 Y1 Z0.8 F20000;就位
-;起始结束位置本应该都是200，但起始挪到203可以挪远线头不影响结束线
-G1 Z0.2
-M109 S{nozzle_temperature_initial_layer[initial_extruder]}
-G1 E2 F300
-G1 X255 E6.5 F{outer_wall_volumetric_speed/(0.3*0.5)/ 4 * 60}
-;往右划细线，顺便顶掉上回的粗线
-G1 Y6 E0.5
-G1 X256 E0.15
-G1 Y0 E0.7
-G1 X246 E0.8
-G1 X244 E6
-G1 X240 E1
-G1 X230 E1.2
-G1 X200 E2.08
-M400
 
 
 
