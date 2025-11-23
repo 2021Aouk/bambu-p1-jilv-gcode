@@ -91,7 +91,7 @@ G1 E160 F{filament_max_volumetric_speed[initial_extruder]/2.4053*60+150} ;换料
 ;换料不干净增加这个E
 
 G92 E0
-G1 E30 F{filament_max_volumetric_speed[initial_extruder]/2.4053*60+190} ;换料不干净增加这个E
+G1 E10 F{filament_max_volumetric_speed[initial_extruder]/2.4053*60+190} ;换料不干净增加这个E
 ;pla黑顶tpu透明，80没问题
 ;petg灰顶pla黑，80头几层发黑粘不住
 ;pla黑顶petg灰，90，95底面扯几丝
@@ -175,6 +175,7 @@ G1 X240 E1
 G1 X230 E1.2
 G1 X200 E2.08
 M400
+
 
 
 
