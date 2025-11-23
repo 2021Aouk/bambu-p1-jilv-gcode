@@ -1,0 +1,287 @@
+;现已优化：冲刷浪费降至下限、竹屎体积减小、不用调z补偿、支持多色、支持tpu、残留自清理、不磨嘴、无清理线、快速开打
+;急律代码秉承原厂直接使用无需更改，不一定兼容第三方擦嘴套件马桶盖
+;首次擦不干净喷嘴为正常现象，循环个两三次
+;无擦嘴条导致概率性首层一个点不干净）建议灵活根据模型需求选择裙边食用而不是常开擦嘴条
+;小概率需要补偿zoffset（拓竹切片没有，用orca）
+;开始和结束gcode都在txt里，分别复制进切片打印机设置
+;第三方改件可以自行测试，盯着看，随时准备停机
+;如果你是从别人手上拿到本文件，强烈建议看一遍b站视频：BV1ddS2YREu6
+;交流群：522185942，欢迎反馈问题、合作开发~
+;开发者注意！注释过多会使g代码不执行，拓竹
+;开始g代码
+ 
+M220 S100 ;速度100%
+M221 S100 ;流量100%
+
+M140 S[bed_temperature_initial_layer_single] ;设置热床温度，不等待
+M104 S{nozzle_temperature_initial_layer[initial_extruder]-0} ;加热不等待同时回xy
+
+M17 X1.2 Y1.2 Z0.75 ;将电机电流复位为默认值
+M17 Z0.4 ; 启用电机(降低Z马达电流)
+
+M1002 set_gcode_claim_speed_level : 5
+M221 X0 Y0 Z0 ;关闭软端限位，防止潜在的逻辑问题
+G29.1 Z{+0.0} ; 首先清除z-trim值
+M204 S10000 ; init ACC set to 10m/s^2
+
+;g28xy后再g28z非要在右手近门处挪一点点，G4 P1000 ;等待1秒也没有用，g91也没用，M290 X256 Y0 Z2.6666666 ;设个零点也不行，电机电流M17 X1.2 Y1.2 Z0.4也不行，应该是拓竹的safez，如果使用g91记得把这一段算上！！ ;将m290设在g28前会导致g28也参考m290，后续所有任务傻b竹子死活归零无力，而我找不到竹子的失能g代码，只能重启，浪费我一晚上，cao
+;将m290设在g28后也会导致后续所有任务傻b竹子死活归零无力
+
+G28 X Y 
+G1 X128 Y128 F30000
+
+;M109 S{nozzle_temperature_initial_layer[initial_extruder]-20} 
+;等待达到温度回z。25628如果以后喷头一直干净首层稳定的话不用等待，直接加热同时归零，然后冲刷开打
+G28 Z P0 T300; home z with low precision,permit 300 temperature
+;M104 S{nozzle_temperature_initial_layer[initial_extruder]+0} ; z归零后立马回温
+G91
+G1 X+5
+G90
+G1 Z-0.15
+G91
+;因为没上料所以此处挤出没有用，如果打废或者手动进料会挤出，记得清理
+G1 X-10 Y0 Z0  F18000  ;E5
+G1 X+5 Y0 Z5 ;E0
+G1 X+5 Y0 Z-5 ;E0
+G1 X-10 Y0 Z0 ;E3
+G1 Z5
+G90
+
+M17 X1.2 Y1.2 Z0.75 ;将电机电流复位为默认值
+;M17 x1.2 y1.2 z0.75；将电机电流复位为默认值，设高会不会更强
+M975 S1 ; 打开振动补偿
+
+;G1 X80 Y245 F30000 ;移动到马桶前面
+;G1 Y266 F3000 ;慢慢移到马桶里，y267就可能撞丢步，虽然再往里废料更容易进去
+;不注释掉以上2个代码会导致二次回坑前后动，注释掉会会停在热床上达到温度再按拓竹ams代码自己回坑
+
+;以下三个g代码停顿了好一会儿，可优化吗？25628：是m620的后摇
+M1002 gcode_claim_action : 2
+M106 P1 S0 ;关风扇
+G29.2 S0 ;关闭ABL（自动调平）
+
+M620 M ;好像只要用m620就会自己往前再往后回厕所
+M620 S[initial_extruder]A   ; 如果AMS存在，则切换材料
+;M109 S[nozzle_temperature_initial_layer] ;热端升至打印温度，此行挪到挤出前，不然会呆在热床上升温
+   T[initial_extruder] 
+;上行文末别注释，只注释也会报错
+    M400
+M621 S[initial_extruder]A
+;设置在最初温度下启用ams？
+M620.1 E F{filament_max_volumetric_speed[initial_extruder]/2.4053*60} T{nozzle_temperature_range_high[initial_extruder]}
+;进料后，挤出设置为最大体积速度/耗材截面积*60，在最高的 设置的喷嘴温度下，进料后有一个5秒后摇应该是挤出机检测耗材，不知道是上面哪个代码
+
+M412 S1 ; 打开断料检检测===
+M106 P1 S255 ;打开吹料风扇
+;此行放这里会刚开就关吹料风扇
+G1 X60 Y266 F25000  
+;冗余代码：已加载选用耗材会导致ams归位代码不执行，喷嘴在上文坐标挤出
+G1 X84 Y266 F25000  ;冗余代码：同上防止ams不执行，挤出裹头
+M109 S[nozzle_temperature_initial_layer] ;冗余代码：注释也会达到设定温度，热端回温准备冲刷，
+M106 P1 S255 ;此行无效原因见下
+G92 E0
+G1 E5 Z0.2 F3000 ;换料不干净别增加这个，
+;貌似e大了不执行
+M106 P1 S255 ;此行无效原因见下
+G92 E0
+M106 P1 S255 ;此行无效原因见下
+G1 E160 F{filament_max_volumetric_speed[initial_extruder]/2.4053*60+150} ;换料不干净增加这个E
+;换料不干净增加这个EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+;换料不干净增加这个EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+;换料不干净增加这个E
+
+G92 E0
+G1 E10 F{filament_max_volumetric_speed[initial_extruder]/2.4053*60+190} ;换料不干净增加这个E
+;pla黑顶tpu透明，80没问题
+;petg灰顶pla黑，80头几层发黑粘不住
+;pla黑顶petg灰，90，95底面扯几丝
+;petg透明顶pla，90头几层发黑粘不住
+
+;M106 P1 S0 ;关闭吹料风扇 ;此行会提前执行导致上文风扇刚开就关
+G92 E0
+G1 E3 F{filament_max_volumetric_speed[initial_extruder]/2.4053*60+240} ；
+G92 E0
+G92 E0
+G1 E-0.1 F300 ；
+G92 E0
+G1 X145 F25000 ;丢步的话是y太靠后
+
+G1 E0.01 F3600;挤出一点防止开打缺料
+
+M106 P1 S0 ;关闭吹料风扇（删掉也会关，但不知道会什么刁钻问题）
+
+;G1 X145 F25000
+;G1 X60 F25000 ;
+;没擦干净带出来是挤出太少重力不够导致的，再擦一遍没有用
+
+M1002 gcode_claim_action : 14
+G29.2 S1 ;打开ABL（自动调平），S0是关闭
+
+
+;===== bed leveling ==================================
+;M1002 judge_flag g29_before_print_flag
+;M622 J1
+;
+;    M1002 gcode_claim_action : 1
+;    G29 A X{first_layer_print_min[0]} Y{first_layer_print_min[1]} I{first_layer_print_size[0]} J{first_layer_print_size[1]}
+;    M400
+;    M500 ; save cali data
+
+;M623
+;===== bed leveling end ================================
+
+;=====对于有纹理的PEI板，在归零时降低喷嘴，因为喷嘴接触到纹理的最顶部 ==
+{if curr_bed_type=="Textured PEI Plate"}
+G29.1 Z{-0.04} ; for Textured PEI Plate
+{endif}
+
+;感谢二月喵逆向的打印板定义名称
+;高温光面板：High Temp Plate
+;纹理PEI：Textured PEI Plate
+;低温纹理板：Textured Cool Plate
+;工程板：Engineering Plate
+;光滑低温：Cool Plate
+;定位板？：Supertack Plate
+
+
+
+;========关掉灯和挤压温度等 ============
+;M1002 gcode_claim_action : 0
+;M106 S0 ; turn off fan
+;M106 P2 S0 ; turn off big fan
+;M106 P3 S0 ; turn off chamber fan
+
+;M190 S[bed_temperature_initial_layer_single] ;wait for bed temp
+
+;==========急律擦嘴线，可加入开始gcode的最后=================
+M975 S1
+G90
+M83
+T1000
+G1 Z5 F25000 ;
+G1 X203 Y1 Z0.8 F20000;就位
+;起始结束位置本应该都是200，但起始挪到203可以挪远线头不影响结束线
+G1 Z0.2
+M109 S{nozzle_temperature_initial_layer[initial_extruder]}
+G1 E2 F300
+G1 X255 E6.5 F{outer_wall_volumetric_speed/(0.3*0.5)/ 4 * 60}
+;往右划细线，顺便顶掉上回的粗线
+G1 Y6 E0.5
+G1 X256 E0.15
+G1 Y0 E0.7
+G1 X246 E0.8
+G1 X244 E6
+G1 X240 E1
+G1 X230 E1.2
+G1 X200 E2.08
+M400
+
+
+
+
+
+
+
+;=====================================结束g代码================================
+;=====================================结束gcode================================
+M400 ; wait for buffer to clear
+M140 S0 ; turn off bed
+M106 S0 ; turn off fan
+M106 P2 S0 ; turn off remote part cooling fan
+M106 P3 S0 ; turn off chamber cooling fan
+
+M104 S300 
+;喷嘴比设定高50度，不等待，同时归位和降低热床，此处高于300会不执行
+G92 E0 ; zero the extruder
+G1 E-4 F3000 ;回抽
+G91
+G1 X+5 Y+5 F24000
+G90
+G1 Z{max_layer_z + 3} F900 ; lower z a little
+G1 X80 Y254 F30000 ; 回坑，x80处门槛低
+G1 Y266 F3000
+G1 X64 Y266 F12000 ;先左移再加热，避免在挂史上
+G92 E0 ; zero the extruder
+G1 E-17 F3000 ;此处回抽减少下回冲刷
+
+M400 ; wait all motion done
+M17 S
+G92 E0
+M17 Z0.4 ; lower z motor current to reduce impact if there is something in the bottom
+{if (max_layer_z + 35.0) < 250}
+    G1 Z{max_layer_z +35.0}  F2000
+    G1 Z{max_layer_z +34.0}
+{else}
+    G1 Z250   F2000 ;可以加E-7
+    G1 Z248
+{endif}
+
+M109 S300 ;喷嘴比设定高50度，等待，使余料流净
+
+G4 P20000      ;等待20秒钟喷嘴余料流净滴落
+G1 X84 Y266 F30 ;缓慢移动10s
+;M400;加此行会等待热端降温后再切断耗材，不加会缓慢移动时就降温
+;M104 S233
+;关热端，如果在切料前执行会导致切料会等待降温到设定度，如果设定低于100好像会降至100？具体规则未知！填100时在缓慢移动时就在降温且前移等待降温完成才切料（200，220，230同），填255时在缓慢移动时就在降温但马上切料(25628缓慢移动降温是m400的事情，马上切料是因为切料前已降至255），230时237就切料了但疑似等待降温完成才回退ams，将缓慢移动f30改成300发现230还会等待，（25628不测试了，垃圾闭源，就不扣这半秒了）
+G1 X100 F12000 ; wipe
+G1 X86 F24000 ；堵住
+;撞四氟管抖掉残料，本注释换行否则不执行
+;说来堵不住因为马上去切料了)以后试试堵住
+; pull back filament to AMS
+M620 S255
+G1 X20 Y50 F12000
+G1 Y-3
+T255;先x60再y245再y慢速255是这个代码还是m621
+;G1 X80 F12000;这里给80似乎没有用，
+;给80是想让他切完回坑不带渣渣，但ams抽完了才执行，原因得问拓竹
+G1 Y266 ;同上
+G1 X70 ;同上不执行
+M621 S255 ;抽回ams?但是注释此行也能抽回ams，而且有3~4秒左右前摇
+
+M106 P1 S255 ;打开吹料风扇 
+M104 S0
+;关热端，如果在切料前执行会导致切料会等待降温到设定度，如果设定低于100好像会降至100
+G1 X100 Y266 F12000
+G1 X100 Y263 ;261就蹭螺丝上了
+G1 X65 Y263
+G1 X65 Y265
+G1 X100 Y265 F1500
+G1 X100 Y262
+G1 X65 Y262
+G1 X65 Y263
+
+
+G1 X100 Y266 
+G1 X100 Y263 ;2572加这几段
+G1 X65 Y263
+G1 X65 Y265
+G1 X100 Y265 F1500
+G1 X100 Y262
+G1 X65 Y262
+G1 X65 Y263
+
+
+
+
+
+G1 X100 Y263 F30000
+G1 X100 Y262
+G1 X65 Y262
+M106 P1 S0 ;关闭吹料风扇 
+
+M622.1 S1 ; for prev firware, default turned on
+M1002 judge_flag timelapse_record_flag
+M622 J1
+    M400 ; wait all motion done
+    M991 S0 P-1 ;end smooth timelapse at safe pos
+    M400 S3 ;wait for last picture to be taken
+M623; end of "timelapse_record_flag"
+
+
+M400 P100
+M17 R ; restore z current
+
+M220 S100  ; Reset feedrate magnitude
+M201.2 K1.0 ; Reset acc magnitude
+M73.2   R1.0 ;Reset left time magnitude
+M1002 set_gcode_claim_speed_level : 0
