@@ -14,7 +14,7 @@ M220 S100 ;速度100%
 M221 S100 ;流量100%
 
 M140 S[bed_temperature_initial_layer_single] ;设置热床温度，不等待
-M104 S{nozzle_temperature_initial_layer[initial_extruder]-0} ;加热不等待同时回xy
+M104 S250 ;打印头异步升温到通用冲刷温度
 
 M17 X1.2 Y1.2 Z0.75 ;将电机电流复位为默认值
 M17 Z0.4 ; 启用电机(降低Z马达电流)
@@ -77,7 +77,7 @@ M106 P1 S255 ;打开吹料风扇
 G1 X60 Y266 F25000  
 ;冗余代码：已加载选用耗材会导致ams归位代码不执行，喷嘴在上文坐标挤出
 G1 X84 Y266 F25000  ;冗余代码：同上防止ams不执行，挤出裹头
-M109 S[nozzle_temperature_initial_layer] ;冗余代码：注释也会达到设定温度，热端回温准备冲刷，
+M109 S250 ;冗余代码：注释也会达到通用冲刷温度，热端回温准备冲刷，
 M106 P1 S255 ;此行无效原因见下
 G92 E0
 G1 E5 Z0.2 F3000 ;换料不干净别增加这个，
