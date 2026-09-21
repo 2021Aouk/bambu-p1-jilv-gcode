@@ -1,14 +1,22 @@
-;现已优化：冲刷浪费降至下限、竹屎体积减小、不用调z补偿、支持多色、支持tpu、残留自清理、不磨嘴、可删清理线、快速开打
-;急律代码秉承原厂直接使用无需更改，不一定兼容第三方擦嘴套件马桶盖
+;此版本功能：可调z补偿、可开自动调平、自带擦嘴线、冲刷浪费降至下限、竹屎体积减小、支持多色、支持tpu、残留自清理、不磨嘴、快速开打
+;使用必读注意事项：
+;急律代码秉承原厂直接使用无需更改，不一定兼容第三方擦嘴套件马桶盖！！！第三方改件可以自行测试，盯着看，随时准备停机
 ;首次擦不干净喷嘴为正常现象，循环个两三次
-;删擦嘴条导致概率性首层一个点不干净）建议灵活根据模型需求选择裙边食用而不是常开擦嘴条
-;小概率需要补偿zoffset（拓竹切片没有，用orca）
-;开始和结束gcode都在txt里，分别复制进切片打印机设置
-;第三方改件可以自行测试，盯着看，随时准备停机
+
 ;如果你是从别人手上拿到本文件，强烈建议看一遍b站视频：BV1VLQvBDEe6
 ;交流群：522185942，欢迎反馈问题、合作开发~
-;开发者注意！注释过多会使g代码不执行，拓竹
-;开始g代码
+;开发者注意！注释过多会使g代码不执行
+
+
+;使用说明：
+;开始和结束gcode都在txt里，分别复制进切片软件打印机设置的“开始gcode”
+;调z补偿请更改下文“z补偿”中的G0 Z-0.05 的值，一般首层过低加0.05，太低可能会导致刮打印板！！！！
+;调冲刷量更改下文“冲刷量”中的G1 E160  的值，越低可能换不干净，但越高约浪费
+;不要擦嘴线请注释掉擦嘴线所有gcode
+
+
+
+;开始g代码：
  
 M220 S100 ;速度100%
 M221 S100 ;流量100%
@@ -35,15 +43,15 @@ G1 X128 Y128 F30000
 G28 Z P0 T300; home z with low precision,permit 300 temperature
 ;M104 S{nozzle_temperature_initial_layer[initial_extruder]+0} ; z归零后立马回温
 G91
-G1 X+5
+G1 X+4 ;喷头右挪
 G90
 G1 Z-0.15
 G91
 ;因为没上料所以此处挤出没有用，如果打废或者手动进料会挤出，记得清理
-G1 X-10 Y0 Z0  F18000  ;E5
-G1 X+5 Y0 Z5 ;E0
-G1 X+5 Y0 Z-5 ;E0
-G1 X-10 Y0 Z0 ;E3
+G1 X-8 Y0 Z0  F18000  ;喷头一次擦残料
+G1 X+5 Y0 Z5 ;抬离热床
+G1 X+5 Y0 Z-5 ;喷头接近热床
+G1 X-12 Y0 Z0 ;喷头二次擦残料
 G1 Z5
 G90
 
@@ -85,13 +93,17 @@ G1 E5 Z0.2 F3000 ;换料不干净别增加这个，
 M106 P1 S255 ;此行无效原因见下
 G92 E0
 M106 P1 S255 ;此行无效原因见下
+
+;换料不干净增加这个EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+;换料不干净增加这个EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+;冲刷量改变这个EEEEEEEEEEEEEEEEEEEEEEEEEEEEEE越低可能换不干净，但越高约浪费
 G1 E160 F{filament_max_volumetric_speed[initial_extruder]/2.4053*60+150} ;换料不干净增加这个E
 ;换料不干净增加这个EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
 ;换料不干净增加这个EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
-;换料不干净增加这个E
+;换料不干净增加这个EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
 
 G92 E0
-G1 E10 F{filament_max_volumetric_speed[initial_extruder]/2.4053*60+190} ;换料不干净增加这个E
+G1 E10 F{filament_max_volumetric_speed[initial_extruder]/2.4053*60+190} ;猛挤一下
 ;pla黑顶tpu透明，80没问题
 ;petg灰顶pla黑，80头几层发黑粘不住
 ;pla黑顶petg灰，90，95底面扯几丝
@@ -102,7 +114,7 @@ G92 E0
 G1 E3 F{filament_max_volumetric_speed[initial_extruder]/2.4053*60+240} ；
 G92 E0
 G92 E0
-G1 E-0.1 F300 ；
+G1 E-0.04 F300 ；
 G92 E0
 G1 X145 F25000 ;丢步的话是y太靠后
 
@@ -117,18 +129,34 @@ M106 P1 S0 ;关闭吹料风扇（删掉也会关，但不知道会什么刁钻�
 M1002 gcode_claim_action : 14
 G29.2 S1 ;打开ABL（自动调平），S0是关闭
 
+G1 X100 F25000 ;回坑等待降温调平
 
-;===== bed leveling ==================================
-;M1002 judge_flag g29_before_print_flag
-;M622 J1
-;
-;    M1002 gcode_claim_action : 1
-;    G29 A X{first_layer_print_min[0]} Y{first_layer_print_min[1]} I{first_layer_print_size[0]} J{first_layer_print_size[1]}
-;    M400
-;    M500 ; save cali data
+;热床调平代码
+===== bed leveling ==================================
+M1002 judge_flag g29_before_print_flag
+M622 J1
 
-;M623
-;===== bed leveling end ================================
+    M1002 gcode_claim_action : 1
+   G29 A X{first_layer_print_min[0]} Y{first_layer_print_min[1]} I{first_layer_print_size[0]} J{first_layer_print_size[1]}
+    M400
+   M500 ; save cali data
+
+M623
+===== bed leveling end ================================
+;热床调平代码结束
+
+
+
+;z补偿code，过低可能会导致首层偏低甚至刮打印板！！！！从0慢慢往下试！！！
+;z补偿code，过低可能会导致首层偏低甚至刮打印板！！！！从0慢慢往下试！！！
+;z补偿code，过低可能会导致首层偏低甚至刮打印板！！！！从0慢慢往下试！！！
+G0 Z-0.05     ; 负值喷嘴下移动0.05mm
+G92 Z0      ; 将当前位置设置为Z轴的零点 (Z=0)
+;由于拓竹官方切片无法z补偿 ，此处代码自带一个z补偿。暂此记录拓竹特规代码是G29.1 Z{-0.05}
+;z补偿code，过低可能会导致首层偏低甚至刮打印板！！！！从0慢慢往下试！！！
+;z补偿code，过低可能会导致首层偏低甚至刮打印板！！！！从0慢慢往下试！！！
+;z补偿code，过低可能会导致首层偏低甚至刮打印板！！！！从0慢慢往下试！！！
+
 
 ;=====对于有纹理的PEI板，在归零时降低喷嘴，因为喷嘴接触到纹理的最顶部 ==
 {if curr_bed_type=="Textured PEI Plate"}
@@ -153,6 +181,8 @@ G29.1 Z{-0.04} ; for Textured PEI Plate
 
 ;M190 S[bed_temperature_initial_layer_single] ;wait for bed temp
 
+
+
 ;==========急律擦嘴线，可加入开始gcode的最后=================
 M975 S1
 G90
@@ -175,10 +205,6 @@ G1 X240 E1
 G1 X230 E1.2
 G1 X200 E2.08
 M400
-
-
-
-
 
 
 
@@ -284,4 +310,5 @@ M17 R ; restore z current
 M220 S100  ; Reset feedrate magnitude
 M201.2 K1.0 ; Reset acc magnitude
 M73.2   R1.0 ;Reset left time magnitude
-M1002 set_gcode_claim_speed_level : 0
+
+
