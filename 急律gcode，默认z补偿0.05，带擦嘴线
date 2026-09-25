@@ -79,57 +79,7 @@ M621 S[initial_extruder]A
 M620.1 E F{filament_max_volumetric_speed[initial_extruder]/2.4053*60} T{nozzle_temperature_range_high[initial_extruder]}
 ;进料后，挤出设置为最大体积速度/耗材截面积*60，在最高的 设置的喷嘴温度下，进料后有一个5秒后摇应该是挤出机检测耗材，不知道是上面哪个代码
 
-M412 S1 ; 打开断料检检测===
-M106 P1 S255 ;打开吹料风扇
-;此行放这里会刚开就关吹料风扇
-G1 X60 Y266 F25000  
-;冗余代码：已加载选用耗材会导致ams归位代码不执行，喷嘴在上文坐标挤出
-G1 X84 Y266 F25000  ;冗余代码：同上防止ams不执行，挤出裹头
-M109 S[nozzle_temperature_initial_layer] ;冗余代码：注释也会达到设定温度，热端回温准备冲刷，
-M106 P1 S255 ;此行无效原因见下
-G92 E0
-G1 E5 Z0.2 F3000 ;换料不干净别增加这个，
-;貌似e大了不执行
-M106 P1 S255 ;此行无效原因见下
-G92 E0
-M106 P1 S255 ;此行无效原因见下
 
-;换料不干净增加这个EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
-;换料不干净增加这个EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
-;冲刷量改变这个EEEEEEEEEEEEEEEEEEEEEEEEEEEEEE越低可能换不干净，但越高约浪费
-G1 E160 F{filament_max_volumetric_speed[initial_extruder]/2.4053*60+150} ;换料不干净增加这个E
-;换料不干净增加这个EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
-;换料不干净增加这个EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
-;换料不干净增加这个EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
-
-G92 E0
-G1 E10 F{filament_max_volumetric_speed[initial_extruder]/2.4053*60+190} ;猛挤一下
-;pla黑顶tpu透明，80没问题
-;petg灰顶pla黑，80头几层发黑粘不住
-;pla黑顶petg灰，90，95底面扯几丝
-;petg透明顶pla，90头几层发黑粘不住
-
-;M106 P1 S0 ;关闭吹料风扇 ;此行会提前执行导致上文风扇刚开就关
-G92 E0
-G1 E3 F{filament_max_volumetric_speed[initial_extruder]/2.4053*60+240} ；
-G92 E0
-G92 E0
-G1 E-0.04 F300 ；
-G92 E0
-G1 X145 F25000 ;丢步的话是y太靠后
-
-G1 E0.01 F3600;挤出一点防止开打缺料
-
-M106 P1 S0 ;关闭吹料风扇（删掉也会关，但不知道会什么刁钻问题）
-
-;G1 X145 F25000
-;G1 X60 F25000 ;
-;没擦干净带出来是挤出太少重力不够导致的，再擦一遍没有用
-
-M1002 gcode_claim_action : 14
-G29.2 S1 ;打开ABL（自动调平），S0是关闭
-
-G1 X100 F25000 ;回坑等待降温调平
 
 ;热床调平代码
 ===== bed leveling ==================================
@@ -171,6 +121,61 @@ G29.1 Z{-0.04} ; for Textured PEI Plate
 ;光滑低温：Cool Plate
 ;定位板？：Supertack Plate
 
+M412 S1 ; 打开断料检检测===
+
+G1 X60 Y266 F25000  
+;冗余代码：已加载选用耗材会导致ams归位代码不执行，喷嘴在上文坐标挤出
+G1 X84 Y266 F25000  ;冗余代码：同上防止ams不执行，挤出裹头
+
+M109 S[nozzle_temperature_initial_layer] ;冗余代码：注释也会达到设定温度，热端回温准备冲刷，
+M106 P1 S255 ;此行无效原因见下
+G92 E0
+;26926注释G1 E5 Z0.2 F3000 ;换料不干净别增加这个，
+;貌似e大了不执行
+M106 P1 S255 ;此行无效原因见下
+G92 E0
+M106 P1 S255 ;此行无效原因见下
+
+
+;换料不干净增加这个EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+;换料不干净增加这个EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+;冲刷量改变这个EEEEEEEEEEEEEEEEEEEEEEEEEEEEEE越低可能换不干净，但越高约浪费
+G1 E160 F{filament_max_volumetric_speed[initial_extruder]/2.4053*60+150} ;换料不干净增加这个E
+;换料不干净增加这个EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+;换料不干净增加这个EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+;换料不干净增加这个EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+
+G92 E0
+G1 E10 F{filament_max_volumetric_speed[initial_extruder]/2.4053*60+190} ;猛挤一下
+;pla黑顶tpu透明，80没问题
+;petg灰顶pla黑，80头几层发黑粘不住
+;pla黑顶petg灰，90，95底面扯几丝
+;petg透明顶pla，90头几层发黑粘不住
+
+;M106 P1 S0 ;关闭吹料风扇 ;此行会提前执行导致上文风扇刚开就关
+G92 E0
+G1 E3 F{filament_max_volumetric_speed[initial_extruder]/2.4053*60+240} ；
+G92 E0
+G1 E-0.04 F300 ；
+G92 E0
+G1 X100  F25000 ;86堵住，87滑脱
+
+;G1 E0.01 F3600;挤出一点防止开打缺料
+
+;M106 P1 S0 ;关闭吹料风扇（删掉也会关，但不知道会什么刁钻问题）
+
+;G1 X95 F25000
+;G1 X60 F25000 ;
+;没擦干净带出来是挤出太少重力不够导致的，再擦一遍没有用
+
+M1002 gcode_claim_action : 14
+G29.2 S1 ;打开ABL（自动调平），S0是关闭
+
+;G1 X95  Y256  F25000  ;往外准备进马桶
+;G1 X84 Y265  F25000 ;回坑等待降温调平
+
+
+
 
 
 ;========关掉灯和挤压温度等 ============
@@ -189,12 +194,12 @@ G90
 M83
 T1000
 G1 Z5 F25000 ;
-G1 X203 Y1 Z0.8 F20000;就位
+G1 X203 Y0 Z0.8 F20000;就位
 ;起始结束位置本应该都是200，但起始挪到203可以挪远线头不影响结束线
 G1 Z0.2
 M109 S{nozzle_temperature_initial_layer[initial_extruder]}
 G1 E2 F300
-G1 X255 E6.5 F{outer_wall_volumetric_speed/(0.3*0.5)/ 4 * 60}
+G1 X256 E6.5 F{outer_wall_volumetric_speed/(0.3*0.5)/ 4 * 60}
 ;往右划细线，顺便顶掉上回的粗线
 G1 Y6 E0.5
 G1 X256 E0.15
@@ -205,6 +210,7 @@ G1 X240 E1
 G1 X230 E1.2
 G1 X200 E2.08
 M400
+
 
 
 
@@ -310,5 +316,4 @@ M17 R ; restore z current
 M220 S100  ; Reset feedrate magnitude
 M201.2 K1.0 ; Reset acc magnitude
 M73.2   R1.0 ;Reset left time magnitude
-
 
